@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-
+import mongoose from 'mongoose';
 import express, { Router } from 'express';
 
 import NoteModel from './models/note.model.js';
@@ -79,5 +79,36 @@ app.patch("/api/notes/:id", async (req, res) => {
     await note.save();
     res.json({ message: "Note updated successfully", note });
 });
+
+
+
+// @route Delete /api/notes/:id
+// @desc Delete a note
+// @access Public
+
+app.delete("/api/notes/:id", async (req, res)=>{
+try {
+        const { id } = req.params;
+
+    // check if id is valid
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        return res.status(400).json({ message: "Invalid note id" });
+    }
+
+    //check if note exists
+    let note = await NoteModel.findById(id);
+    if(!note){
+        return res.status(404).json({ message: "Note not found" });
+    }
+
+    // if it exists, delete it
+    await NoteModel.findByIdAndDelete(id);
+
+    res.json({ message: "Note deleted successfully" });
+}
+catch(error){
+    console.error("Error deleting note:", error);
+    res.status(500).json({ message: "Internal server error" }); }
+})
 
 export default app;
