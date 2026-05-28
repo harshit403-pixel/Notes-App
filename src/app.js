@@ -52,7 +52,18 @@ app.post("/api/auth/register", async(req,res)=>{
 // @access Public
 
 app.post("/api/notes", async (req, res) => {
+
+
+    
 const { title, description } = req.body;
+
+const token = req.cookies.token
+// token is an object with id and email, we need to parse it
+let user = JSON.parse(token)
+req.user = user
+
+// now user has id and email, we can use it to associate the note with the user if needed
+
 
 
 // Validation
@@ -70,7 +81,9 @@ if(description.trim().length < 10 ){
 
 // if validation passes, create a new note 
 
-let newNote =  await NoteModel.create({ title, description });
+
+//we also now addded the user field where now notes are storing with the info of user
+let newNote =  await NoteModel.create({ title, description, user : req.user.email });
 
 
     res.json({ message: "Note created successfully", note: newNote });

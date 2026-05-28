@@ -6,6 +6,9 @@ const noteSchema = new mongoose.Schema({
     },
     description: {
         type:String,
+    },
+    user:{
+        type:String
     }
 })
 
