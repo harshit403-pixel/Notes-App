@@ -61,6 +61,11 @@ app.patch("/api/notes/:id", async (req, res) => {
     const {  description } = req.body;
 
     // validation
+
+        if(!mongoose.Types.ObjectId.isValid(id)){
+        return res.status(400).json({ message: "Invalid note id" });
+    }
+
     if(!description || description.trim().length < 10){
         return res.status(400).json({ message: "Description must be at least 10 characters long" });
     }
