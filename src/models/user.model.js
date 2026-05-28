@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt'
 
-let useSchema = new mongoose.Schema({
+let userSchema = new mongoose.Schema({
     name:{
         type:String,
         required:true,
@@ -12,6 +13,11 @@ let useSchema = new mongoose.Schema({
         trim:true,
         unique:true,
         lowercase:true
+    },
+    password:{
+        type:String,
+        required:true,
+        trim:true
     }
 },
 {
@@ -19,6 +25,17 @@ let useSchema = new mongoose.Schema({
 })
 
 
-let UserModel = mongoose.model('User', useSchema);
+// Pre-save middleware
+// Runs automatically before saving the user document
+
+// Using normal function instead of arrow function
+// because we need access to `this` keyword,
+// and `this` refers to the current document being saved
+userSchema.pre("save",function(){
+    this.password = bcrypt.hashSync(this.password, 10)
+})
+
+
+let UserModel = mongoose.model('User', userSchema);
 
 export default UserModel;
