@@ -2,12 +2,50 @@ import dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
 import express, { Router } from 'express';
-
+import UserModel from './models/user.model.js';
 import NoteModel from './models/note.model.js';
+import cookies from 'cookie-parser';
 
 
 const app = express();
 app.use(express.json());
+app.use(cookies());
+
+
+
+// @route Post /api/auth/register
+// @desc Register a new user
+// @access Public
+
+app.post("/api/auth/register", async(req,res)=>{
+    const { name, email } = req.body;
+    // validation
+    if(!name || !email){
+        return res.status(400).json({ message: "Name and email are required" });
+    }
+
+    if(name.trim().length < 3){
+        return res.status(400).json({ message: "Name must be at least 3 characters long" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)){
+        return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // if validation passes, create a new user
+     
+    let newUser = await UserModel.create({
+        name , email
+    })
+
+    let token = JSON.stringify({ id: newUser._id, email: newUser.email });
+
+    res.cookie("token", token)
+
+    return res.status(201).json({ message: "User created successfully", user: newUser });
+})
+
  
 // @route Post /api/post
 // @desc Create a new post
