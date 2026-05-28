@@ -2,20 +2,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Router } from 'express';
-import connectDB from './config/db.js';
+
 import NoteModel from './models/note.model.js';
 
-connectDB();
 
-app.use(express.json());
 const app = express();
+app.use(express.json());
  
 // @route Post /api/post
 // @desc Create a new post
 // @access Public
 
-
-app.post("/api/post", async (req, res) => {
+app.post("/api/notes", async (req, res) => {
 const { title, description } = req.body;
 
 
@@ -39,5 +37,20 @@ let newNote =  await NoteModel.create({ title, description });
 
     res.json({ message: "Note created successfully", note: newNote });
 });
+
+
+// @route Get /api/notes
+// @desc Get all notes
+// @access Public
+
+app.get("/api/notes", async (req, res) => {
+    let notes = await NoteModel.find();
+    res.json(
+        {
+            message: "Notes fetched successfully",
+            notes });
+});
+
+
 
 export default app;
