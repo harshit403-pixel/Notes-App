@@ -5,7 +5,7 @@ import express, { Router } from 'express';
 import UserModel from './models/user.model.js';
 import NoteModel from './models/note.model.js';
 import cookies from 'cookie-parser';
-
+import jwt from 'jsonwebtoken'
 
 const app = express();
 app.use(express.json());
@@ -39,7 +39,7 @@ app.post("/api/auth/register", async(req,res)=>{
         name , email
     })
 
-    let token = JSON.stringify({ id: newUser._id, email: newUser.email });
+    let token = jwt.sign({ id: newUser._id, email: newUser.email }, process.env.JWT_SECRET);
 
     res.cookie("token", token)
 
@@ -58,8 +58,9 @@ app.post("/api/notes", async (req, res) => {
 const { title, description } = req.body;
 
 const token = req.cookies.token
-// token is an object with id and email, we need to parse it
-let user = JSON.parse(token)
+// token is an object with id and email, we need to verify it
+//verify is used verify the token that client has sent
+let user = jwt.verify(token, process.env.JWT_SECRET)
 req.user = user
 
 // now user has id and email, we can use it to associate the note with the user if needed
@@ -95,7 +96,16 @@ let newNote =  await NoteModel.create({ title, description, user : req.user.emai
 // @access Public
 
 app.get("/api/notes", async (req, res) => {
-    let notes = await NoteModel.find();
+    
+    let token = req.cookies.token
+    let user = JSON.parse(token)
+    req.user = user
+
+    let notes = await NoteModel.find({
+        user:req.user.email
+    });
+
+
     res.json(
         {
             message: "Notes fetched successfully",
